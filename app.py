@@ -3,8 +3,6 @@ import os
 import json
 import time
 from datetime import datetime
-#from dotenv import load_dotenv
-import streamlit as st
 
 # ── Page config (must be first) ─────────────────────────────────
 st.set_page_config(
@@ -14,22 +12,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ── Load env ────────────────────────────────────────────────────
-#load_dotenv()
-#GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-#TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
-#SEMANTIC_SCHOLAR_API_KEY = os.getenv("SEMANTIC_SCHOLAR_API_KEY")
+# ── Load env (works locally + HuggingFace + Streamlit Cloud) ────
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except:
+    pass  # dotenv not needed on cloud
+
+# get keys from environment (works everywhere)
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY", "")
+SEMANTIC_SCHOLAR_API_KEY = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "")
+USER_ID = os.environ.get("USER_ID", "research_agent_user")
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MEMORY_FILE = os.path.join(BASE_DIR, "memory.json")
-def get_secret(key, default=""):
-    try:
-        return st.secrets[key]  # Streamlit Cloud
-    except:
-        return os.getenv(key, default)  # local .env
-
-GROQ_API_KEY = get_secret("GROQ_API_KEY")
-TAVILY_API_KEY = get_secret("TAVILY_API_KEY")
-SEMANTIC_SCHOLAR_API_KEY = get_secret("SEMANTIC_SCHOLAR_API_KEY")
 # ── Custom CSS ──────────────────────────────────────────────────
 st.markdown("""
 <style>
