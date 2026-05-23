@@ -1,0 +1,18 @@
+cat > requirements.txt << 'EOF'
+python-dotenv
+streamlit
+langchain
+langchain-groq
+langchain-chroma
+langchain-huggingface
+langgraph
+chromadb
+sentence-transformers
+arxiv
+requests
+tavily-python
+langchain-text-splitters
+langchain-community
+langchain-core
+groq
+EOF
