@@ -58,7 +58,8 @@ def search_arxiv(query: str, max_results: int = 5, year_from: int = 2022):
                 "pdf_url": paper.pdf_url,
                 "doi": paper.doi,
                 "published": str(paper.published.date()),
-                "year": paper.published.year
+                "year": paper.published.year,
+                "source": "arxiv" 
             })
             if len(results) >= max_results:
                 break

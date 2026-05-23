@@ -99,12 +99,21 @@ def memory_node(state: AgentState) -> AgentState:
 
 def orchestrator_node(state: AgentState) -> AgentState:
     print("\n[ORCHESTRATOR] Planning task...")
+
+    # auto spell-fix query
+    fix_prompt = f"Fix spelling mistakes in this research query. Return ONLY the corrected query, nothing else: '{state['query']}'"
+    corrected = llm.invoke(fix_prompt).content.strip().strip("'\"")
+    if corrected.lower() != state["query"].lower():
+        print(f"[ORCHESTRATOR] Spell-fixed: '{state['query']}' → '{corrected}'")
+        state["query"] = corrected
+
     prompt = f"""You are a research planning agent.
 User query: {state['query']}
 Past context: {state['memory_context']}
 
 Create a brief 2-3 line search plan.
 What keywords to search? What aspects to focus on?"""
+
     response = llm.invoke(prompt)
     state["task_plan"] = response.content
     print(f"[ORCHESTRATOR] Plan ready ✅")
@@ -224,17 +233,20 @@ Reply ONLY with:
 
 def report_node(state: AgentState) -> AgentState:
     print("\n[REPORT] Generating final report...")
+    
+    # include ALL results, not just top 8
     sources = "\n".join([
-        f"- {r.get('title','N/A')} | "
-        f"{r.get('pdf_url') or r.get('url','N/A')}"
-        for r in state["search_results"][:8]
+        f"- {r.get('title','N/A')} | {r.get('pdf_url') or r.get('url','N/A')}"
+        for r in state["search_results"]   # ← removed [:8] limit
         if r.get('title')
     ])
+
     prompt = f"""You are a research report writer.
 
 Query: {state['query']}
 Synthesis: {state['synthesis']}
-Sources:
+
+ALL Sources found (include ALL of these in references):
 {sources}
 
 Write a structured research report with:
@@ -242,7 +254,7 @@ Write a structured research report with:
 2. Key Findings
 3. Methodology Trends
 4. Research Gaps
-5. References
+5. References — LIST EVERY SOURCE provided above, do not skip any
 
 Be concise and professional."""
 
